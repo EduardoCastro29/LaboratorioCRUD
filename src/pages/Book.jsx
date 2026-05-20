@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import Nav from "../components/Nav"; // Se importa el componente del Nav
-import ProductForm from "../components/ProductForm"; // Se importa el componente productForm y se les manda el prompt que solicita
-import ConfirmModal from "../components/ConfirmModal"; // Se importa el componente ConfirmModal y se les manda el prompt que solicita
+import ProductForm from "../components/BookForm.jsx"; // Se importa el componente productForm y se les manda el prompt que solicita
+import ConfirmModal from "../components/ConfirmModal.jsx"; // Se importa el componente ConfirmModal y se les manda el prompt que solicita
 
 const Products = () => {
   // Estados que controla la lista de productos y su carga.
