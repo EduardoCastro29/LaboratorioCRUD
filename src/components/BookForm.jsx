@@ -71,22 +71,7 @@ const ProductForm = ({
           className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2"
           onSubmit={handleSubmit}
         >
-          {/* Campo de id. */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700">
-              ID
-            </label>
-            <input
-              name="id"
-              type="number"
-              step="1"
-              value={form.id}
-              onChange={handleChange}
-              placeholder="Ingrese el ID"
-              className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-indigo-500 focus:bg-white"
-              required
-            />
-          </div>
+          
 
           {/* Campo de título . */}
           <div className="sm:col-span-2">

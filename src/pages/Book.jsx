@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import Nav from "../components/Nav"; // Se importa el componente del Nav
-import ProductForm from "../components/BookForm.jsx"; // Se importa el componente productForm y se les manda el prompt que solicita
+import BookForm from "../components/BookForm.jsx"; // Se importa el componente productForm y se les manda el prompt que solicita
 import ConfirmModal from "../components/ConfirmModal.jsx"; // Se importa el componente ConfirmModal y se les manda el prompt que solicita
 
-const Products = () => {
+const Books = () => {
   // Estados que controla la lista de productos y su carga.
-  const [products, setProducts] = useState([]);
+  const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [categories, setCategories] = useState([]);
@@ -18,11 +18,11 @@ const Products = () => {
     localStorage.getItem("laboratorio_token") ||
     sessionStorage.getItem("laboratorio_token");
 
-  // Filtra productos según el texto de búsqueda en título, descripción o categoría.
-  const filteredProducts = products.filter((product) => {
+  // Filtra libros según el texto de búsqueda en título, descripción .
+  const filteredBooks = books.filter((book) => {
     const query = searchTerm.trim().toLowerCase();
     if (!query) return true;
-    return [product.title, product.description, product.category]
+    return [book.title, book.description, book.category]
       .join(" ")
       .toLowerCase()
       .includes(query);
@@ -31,10 +31,10 @@ const Products = () => {
   // Cálculos de paginación.
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredProducts.length / itemsPerPage),
+    Math.ceil(filteredBooks.length / itemsPerPage),
   );
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentProducts = filteredProducts.slice(
+  const currentBook = filteredBooks.slice(
     startIndex,
     startIndex + itemsPerPage,
   );
@@ -46,41 +46,42 @@ const Products = () => {
       return;
     }
 
-    const fetchProducts = async () => {
+    const fetchBook = async () => {
       try {
-        const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+        const response = await fetch(
+          "https://jsonplaceholder.typicode.com/posts",
+        );
         if (!response.ok) {
-          throw new Error("Error al cargar los productos");
+          throw new Error("Error al cargar los libros");
         }
 
         const data = await response.json();
         // Agrega la propiedad source para distinguir productos de la API de los locales.
-        setProducts(data.map((product) => ({ ...product, source: "api" })));
+        setBooks(data.map((book) => ({ ...book, source: "api" })));
       } catch (err) {
-        setError(err.message || "No se pudieron cargar los productos");
+        setError(err.message || "No se pudieron cargar los libros");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    fetchBook();
   }, [navigate, token]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
+  const handleEditBook = async (bookid) => {
+    setBookError("");
+    setLoadingBookDetail(true);
 
-  const handleEditProduct = async (productId) => {
-    setProductError("");
-    setLoadingProductDetail(true);
-
-    const localProduct = products.find((product) => product.id === productId);
-    // Si el producto ya está en el estado local, no vuelve a pedirlo a la API.
-    if (localProduct) {
-      setEditingProduct(localProduct);
-      setShowProductForm(true);
-      setLoadingProductDetail(false);
+    const localBook = books.find((book) => book.id === bookid);
+    // Si el libro ya está en el estado local, no vuelve a pedirlo a la API.
+    if (localBook) {
+      setEditingBook(localBook);
+      setShowBookForm(true);
+      setLoadingBookDetail(false);
       return;
     }
 
@@ -93,35 +94,35 @@ const Products = () => {
       }
 
       const data = await response.json();
-      setEditingProduct({ ...data, source: "api" });
-      setShowProductForm(true);
+      setEditingBook({ ...data, source: "api" });
+      setShowBookForm(true);
     } catch (err) {
-      setProductError(err.message || "No se pudo cargar el libro");
+      setBookError(err.message || "No se pudo cargar el libro");
     } finally {
-      setLoadingProductDetail(false);
+      setLoadingBookDetail(false);
     }
   };
 
-  const handleUpdateProduct = async (formData) => {
-    setProductError("");
-    setProductSuccess("");
-    setProductSubmitting(true);
+  const handleUpdateBook = async (formData) => {
+    setBookError("");
+    setBookSuccess("");
+    setBookSubmitting(true);
 
-    const isLocalProduct = editingProduct?.source !== "api";
+    const isLocalBook = editingBook?.source !== "api";
 
     try {
-      if (isLocalProduct) {
+      if (isLocalBook) {
         // Actualiza directamente el producto local sin llamar a la API.
-        setProducts((prev) =>
+        setBooks((prev) =>
           prev.map((p) =>
-            p.id === editingProduct.id
+            p.id === editingBook.id
               ? { ...p, ...formData, source: p.source || "local" }
               : p,
           ),
         );
-        setProductSuccess("libro actualizado correctamente.");
-        setShowProductForm(false);
-        setEditingProduct(null);
+        setBookSuccess("libro actualizado correctamente.");
+        setShowBookForm(false);
+        setEditingBook(null);
         return;
       }
 
@@ -140,46 +141,46 @@ const Products = () => {
       }
 
       const data = await response.json();
-      setProducts((prev) =>
+      setBooks((prev) =>
         prev.map((p) =>
-          p.id === editingProduct.id ? { ...data, source: "api" } : p,
+          p.id === editingBook.id ? { ...data, source: "api" } : p,
         ),
       );
-      setProductSuccess("Libro actualizado correctamente.");
-      setShowProductForm(false);
-      setEditingProduct(null);
+      setBookSuccess("Libro actualizado correctamente.");
+      setShowBookForm(false);
+      setEditingBook(null);
       console.log(" updated libro:", data);
     } catch (err) {
-      setProductError(err.message || "No se pudo actualizar el libro");
+      setBookError(err.message || "No se pudo actualizar el libro");
     } finally {
-      setProductSubmitting(false);
+      setBookSubmitting(false);
     }
   };
 
-  const handleDeleteProduct = async (id) => {
-    setProductToDelete(id);
+  const handleDeleteBook = async (id) => {
+    setBookToDelete(id);
     setShowDeleteConfirm(true);
   };
 
-  const confirmDeleteProduct = async () => {
-    if (!productToDelete) return;
+  const confirmDeleteBook = async () => {
+    if (!bookToDelete) return;
 
-    setProductError("");
-    setProductSuccess("");
+    setBookError("");
+    setBookSuccess("");
     setShowDeleteConfirm(false);
 
     try {
-      const product = products.find((p) => p.id === productToDelete);
-      if (product?.source !== "api") {
-        // Si el producto es local, simplemente lo eliminamos del estado.
-        setProducts((prev) => prev.filter((p) => p.id !== productToDelete));
-        setProductSuccess("Libro eliminado correctamente.");
-        setProductToDelete(null);
+      const book = book.find((p) => p.id === bookToDelete);
+      if (book?.source !== "api") {
+        // Si el libro es local, simplemente lo eliminamos del estado.
+        setBooks((prev) => prev.filter((p) => p.id !== bookToDelete));
+        setBookSuccess("Libro eliminado correctamente.");
+        setBookToDelete(null);
         return;
       }
 
       const response = await fetch(
-        `https://fakestoreapi.com/products/${productToDelete}`,
+        `https://jsonplaceholder.typicode.com/posts/${bookToDelete}`,
         {
           method: "DELETE",
         },
@@ -187,43 +188,46 @@ const Products = () => {
 
       if (!response.ok) {
         const text = await response.text();
-        throw new Error(text || "Error eliminando producto");
+        throw new Error(text || "Error eliminando libro");
       }
 
-      setProducts((prev) => prev.filter((p) => p.id !== productToDelete));
-      setProductSuccess("Producto eliminado correctamente.");
-      setProductToDelete(null);
+      setBooks((prev) => prev.filter((p) => p.id !== bookToDelete));
+      setBookSuccess("Libro eliminado correctamente.");
+      setBookToDelete(null);
     } catch (err) {
-      setProductError(err.message || "No se pudo eliminar el producto");
-      setProductToDelete(null);
+      setBookError(err.message || "No se pudo eliminar el libro");
+      setBookToDelete(null);
     }
   };
 
-  const cancelDeleteProduct = () => {
+  const cancelDeleteBook = () => {
     setShowDeleteConfirm(false);
-    setProductToDelete(null);
+    setBookToDelete(null);
   };
 
-  const [showProductForm, setShowProductForm] = useState(false);
-  const [productSubmitting, setProductSubmitting] = useState(false);
-  const [productError, setProductError] = useState("");
-  const [productSuccess, setProductSuccess] = useState("");
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [loadingProductDetail, setLoadingProductDetail] = useState(false);
+  const [showBookForm, setShowBookForm] = useState(false);
+  const [bookSubmitting, setBookSubmitting] = useState(false);
+  const [bookError, setBookError] = useState("");
+  const [bookSuccess, setBookSuccess] = useState("");
+  const [editingBook, setEditingBook] = useState(null);
+  const [loadingBookDetail, setLoadingBookDetail] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [productToDelete, setProductToDelete] = useState(null);
+  const [bookToDelete, setBookToDelete] = useState(null);
 
-  const handleCreateProduct = async (formData) => {
-    setProductError("");
-    setProductSuccess("");
-    setProductSubmitting(true);
+  const handleCreateBook = async (formData) => {
+    setBookError("");
+    setBookSuccess("");
+    setBookSubmitting(true);
 
     try {
-      const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        "https://jsonplaceholder.typicode.com/posts",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        },
+      );
 
       if (!response.ok) {
         const text = await response.text();
@@ -231,18 +235,16 @@ const Products = () => {
       }
 
       const data = await response.json();
-      const newProduct = { ...data, source: "local" };
-      setProducts((prev) => [newProduct, ...(prev || [])]);
-      setProductSuccess(
-        "Libro creado correctamente. ID: " + (newProduct.id || "—"),
-      );
-      setShowProductForm(false);
-      setEditingProduct(null);
+      const newBook = { ...data, source: "local" };
+      setBooks((prev) => [newBook, ...(prev || [])]);
+      setBookSuccess("Libro creado correctamente. ID: " + (newBook.id || "—"));
+      setShowBookForm(false);
+      setEditingBook(null);
       setCurrentPage(1);
     } catch (err) {
-      setProductError(err.message || "No se pudo crear el libro");
+      setBookError(err.message || "No se pudo crear el libro");
     } finally {
-      setProductSubmitting(false);
+      setBookSubmitting(false);
     }
   };
 
@@ -261,8 +263,8 @@ const Products = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setEditingProduct(null);
-                    setShowProductForm((s) => !s);
+                    setEditingBook(null);
+                    setShowBookForm((s) => !s);
                   }}
                   className="rounded-2xl bg-green-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-800"
                 >
@@ -272,29 +274,27 @@ const Products = () => {
             </div>
           </div>
         </div>
-        {productError && (
+        {bookError && (
           <div className="mb-4 rounded-2xl bg-rose-50 px-4 py-3 text-rose-700">
-            {productError}
+            {bookError}
           </div>
         )}
-        {productSuccess && (
+        {bookSuccess && (
           <div className="mb-4 rounded-2xl bg-emerald-50 px-4 py-3 text-emerald-700">
-            {productSuccess}
+            {bookSuccess}
           </div>
         )}
 
-        {showProductForm && (
+        {showBookForm && (
           // Aca se pasa el prompt
-          <ProductForm
-            initialData={editingProduct || {}}
+          <BookForm
+            initialData={editingBook || {}}
             categories={categories}
-            onSubmit={
-              editingProduct ? handleUpdateProduct : handleCreateProduct
-            }
-            submitting={productSubmitting || loadingProductDetail}
+            onSubmit={editingBook ? handleUpdateBook : handleCreateBook}
+            submitting={bookSubmitting || loadingBookDetail}
             onClose={() => {
-              setShowProductForm(false);
-              setEditingProduct(null);
+              setShowBookForm(false);
+              setEditingBook(null);
             }}
           />
         )}
@@ -305,8 +305,8 @@ const Products = () => {
           message="¿Estás seguro de que deseas eliminar este libro? Esta acción no se puede deshacer."
           isOpen={showDeleteConfirm}
           isDangerous={true}
-          onConfirm={confirmDeleteProduct}
-          onCancel={cancelDeleteProduct}
+          onConfirm={confirmDeleteBook}
+          onCancel={cancelDeleteBook}
         />
 
         <div className="overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-slate-200">
@@ -333,43 +333,43 @@ const Products = () => {
                       <th className="px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white text-center">
                         Descripción
                       </th>
-                      <th className="px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white">   </th>
+                      <th className="px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white">
+                        {" "}
+                      </th>
                       <th className="px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white text-center">
                         Acciones
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-black bg-white">
-                    {currentProducts.map((product) => (
-                      <tr key={product.id} className="hover:bg-slate-50">
+                    {currentBook.map((book) => (
+                      <tr key={book.id} className="hover:bg-slate-50">
                         <td className="px-6 py-4 align-top text-sm text-slate-700 max-w-xl wrap-break-word">
-                          {product.id}
+                          {book.id}
                         </td>
                         <td className="px-6 py-4 align-top text-sm text-slate-700 max-w-xl wrap-break-word">
-                          {product.title}
+                          {book.title}
                         </td>
                         <td className="px-6 py-4 align-top text-sm text-slate-600 max-w-2xl wrap-break-word">
-                          {product.body}
+                          {book.body}
                         </td>
-                        <td className="px-6 py-4 align-top text-sm text-slate-700">
-                          
-                        </td>
+                        <td className="px-6 py-4 align-top text-sm text-slate-700"></td>
                         <td className="px-6 py-4 align-top text-sm text-slate-700">
                           <div className="flex flex-wrap gap-2">
                             <button
                               type="button"
-                              onClick={() => handleEditProduct(product.id)}
-                              disabled={loadingProductDetail}
+                              onClick={() => handleEditBook(book.id)}
+                              disabled={loadingBookDetail}
                               className="rounded-full w-full bg-orange-500 px-3 py-1 text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:bg-slate-400"
                             >
-                              Editar producto
+                              Editar libro
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleDeleteProduct(product.id)}
+                              onClick={() => handleDeleteBook(book.id)}
                               className="rounded-full w-full bg-orange-500 px-3 py-1 text-white transition hover:bg-red-800"
                             >
-                              Eliminar producto
+                              Eliminar libro
                             </button>
                           </div>
                         </td>
@@ -434,4 +434,4 @@ const Products = () => {
   );
 };
 
-export default Products;
+export default Books;
